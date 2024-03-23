@@ -1,0 +1,9 @@
+helm-build:
+  stage: build
+  image:
+    name: azman0101/gcloud-kubectl-helm:latest
+  tags:
+    - gitlab-org-docker
+  script:
+    - helm package charts/${CHART}
+  parallel: !reference [.parallel, charts]

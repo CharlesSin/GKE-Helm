@@ -1,0 +1,156 @@
+# env => 部屬的環境(必填)，可填值 dev test staging prod
+# type => 部屬的類型(必填)，可填值 api job frontend
+# dept => 部門的單位(必填)，可填值 platform outside interface gt1
+# product => 服務名稱(必填)，例如: bbchat schedule
+# repo => 部屬服務的 repo 名稱(必填)，例如: imctl_api, imctl_web
+labels:
+  env: staging
+  type: type
+  dept: dept
+  product: product
+  repo: repo
+
+# namespace 預設 default
+namespace: # service namespace
+# serviceAccountName 預設 default
+serviceAccountName: null
+# 服務的名稱(必填)
+name: # service name. ex: <部門>-<組別>-<服務名稱>-<服務代號>
+
+deployment:
+  # container 的屬性
+  container:
+    image: # docker image
+    # container 的 command，下面有範例(非必填)
+    # Pod 數量
+    replicaCount: 1
+    command:
+      - "/bin/sh"
+    # container port(非必填)
+    containerPort: 80
+    envs:
+      # ConfigMap Ref
+      # ref:
+      #   configMapRefName: configMapRefName
+      #   # Secret Ref 
+      #   secretRefName: secretRefName
+      # Secret value from
+      # secretFrom:
+      #   envName: envName
+      #   secretKeyRefName: secretKeyRefName
+      #   secretKeyRefKey: secretKeyRefKey
+    volumes: 
+      name: config-volume
+      # configMap: 
+      #   name: socket-server-locator-configmap
+      #   itemsKey: Locator.json
+      #   itemsPath: Locator.json
+    # volumeMounts:
+    #   name: config-volume
+    #   mountPath: /app/config  # Mount path to access the ConfigMap data
+
+# container 的資源設置
+resources:
+  limits:
+    cpu: "100m"
+    memory: "128Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+    # container 的 livenessProbe，下面有範例(非必填)
+    # livenessProbe:
+    #   tcpSocket:
+    #     port: 80
+    # # 通常用於 api 檢查的 livenessProbe，下面有範例(非必填)
+    #   httpGet:
+    #     path: /health
+    #     port: 80
+    # # container 的 readinessProbe，下面有範例(非必填)
+    # readinessProbe:
+    #   tcpSocket:
+    #     port: 80
+    # # 通常用於 api 的 readinessProbe，下面有範例(非必填)
+    #   httpGet:
+    #     path: /health
+    #     port: 80
+
+  # sidecar container (fluentd, logrotate)
+  # sidecar:
+  #     # container 的名稱
+  #   - name: fluentd
+  #     # container 的 image(必填)
+  #     image: fluent
+  #     # container 的資源設置，如果沒有設置則使用預設值。下面有範例(非必填)
+  #     resources:
+  #       limits:
+  #         cpu: "100m"
+  #         memory: "128Mi"
+  #       requests:
+  #         cpu: "100m"
+  #         memory: "128Mi"
+
+# hpa 設定，下面有範例(非必填),Utilization 代表使用率，averageValue 代表平均值
+hpa:
+  min: 1
+  max: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        type: Utilization
+        value: 50
+    - type: Resource
+      resource:
+        name: memory
+        type: AverageValue
+        value: 100Mi
+
+# service 設定，讓 pod 可以被外部存取
+service:
+  # service 的 類型 ClusterIP NodePort LoadBalancer
+  type: "ClusterIP"
+  # service 的 port，下面有範例
+  ports:
+    - name: "http"
+      port: 80
+      targetPort: 80
+  # whitelists:
+  #   - name: first
+  #     ip: 10.0.0.0/24
+  #   - name: second
+  #     ip: 10.0.2.0/24
+
+# configmap list，下面有範例
+# configmap:
+#   - name: configmap-name
+#     data:
+#       conf: |
+#         設定檔內容寫這邊
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 80
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""

@@ -1,0 +1,15 @@
+.login-package:
+  stage: Package
+  image:
+    name: azman0101/gcloud-kubectl-helm:latest
+  tags:
+    - gitlab-org-docker
+  before_script:
+    - mkdir -p $HOME/.docker
+    - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+
+# 管理 helm 的專案列表
+.parallel:
+  charts:
+    matrix:
+      - CHART: ["app-dev"]

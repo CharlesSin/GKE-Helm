@@ -1,0 +1,10 @@
+stages:
+  - lint
+  - build
+  - Package
+
+include:
+  - "helm-templates.yml"
+  - "helm-package.yml"
+  - "helm-lint.yml"
+  - "helm-build.yml"

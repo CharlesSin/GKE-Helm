@@ -1,0 +1,9 @@
+helm-lint:
+  stage: lint
+  image:
+    name: azman0101/gcloud-kubectl-helm:latest
+  tags:
+    - gitlab-org-docker
+  script:
+    - helm lint charts/${CHART}
+  parallel: !reference [.parallel, charts]

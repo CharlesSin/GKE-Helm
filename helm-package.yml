@@ -1,0 +1,15 @@
+package:
+  extends: .login-package
+  script:
+    - helm package charts/${CHART}
+    - gcloud auth activate-service-account --key-file=service_account.json
+    - gcloud auth configure-docker <Artifact Registry region>
+    - helm push ${CHART}-*.tgz oci://<Artifact Registry region>/<Rroject ID>/<Artifact Registry repo name>
+    - rm ${CHART}-*.tgz
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "originmaster"'
+      changes:
+        - charts/${CHART}/*.yaml
+        - charts/${CHART}/templates/*.tpl
+        - charts/${CHART}/templates/*.yaml
+  parallel: !reference [.parallel, charts]
