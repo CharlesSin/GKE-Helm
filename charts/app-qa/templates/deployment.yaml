@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- if .Values.labels }}
+  # labels
+  labels:
+    {{- include "labels" . | indent 4 }}
+  {{- end }}
+  # deployment 名稱
+  name: {{ .Values.name }}
+  # namespace
+  namespace: {{ .Values.namespace | default "default" }}
+spec:
+  replicas: {{ .Values.deployment.container.replicaCount }}
+  selector:
+    matchLabels:
+      {{- if .Values.labels }}
+      # deployment 與 pod 相認的 labels
+      {{- include "labels" . | indent 6 }}
+      {{- end }}
+  strategy:
+    # 更新 pod 內容的 rolling 策略
+    rollingUpdate:
+      # 最大突破 pod 數量
+      maxSurge: 1
+      # 最大不可用 pod 數量
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- if .Values.labels }}
+      # pod labels
+      labels:
+        {{- include "labels" . | indent 8 }}
+      {{- end }}
+
+      {{- if .Values.configmap }}
+      # checksum 用來判斷 pod 是否需要更新
+      annotations:
+        {{- include "checksum" . | indent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.deployment.container.image | default "" }}
+          imagePullPolicy: {{ .imagePullPolicy | default "Always" }}
+          ports:
+            - containerPort: {{ .Values.deployment.container.containerPort }}
+          envFrom:
+            {{- include "configmap" . | indent 12 }}
+          env:
+            {{- include "secret" . | indent 12 }}
+          resources:
+            {{- include "resources" . | indent 12 }}
+          volumeMounts:
+            {{- include "volumeMounts" . | indent 12 }}
+      volumes:
+        {{- include "volumes" . | indent 8 }}

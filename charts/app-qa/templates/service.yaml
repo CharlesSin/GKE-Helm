@@ -1,0 +1,29 @@
+{{- if .Values.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace | default "default" }}
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "backend-config"}'
+spec:
+{{- with .Values.service }}
+  # service 類型，預設為 ClusterIP
+  type: {{ .type | default "ClusterIP" }}
+  # service ports 設定
+  {{ if eq .type "LoadBalancer" }}
+  loadBalancerSourceRanges:
+  {{- range .whitelists }}
+  - {{ .ip | indent 2 }}
+  {{- end }}
+  {{- end }}
+  ports:
+  {{- include "servicePorts" . | indent 2 }}
+{{- end }}
+{{- if $.Values.labels }}
+  selector:
+    # 標籤一樣從 labels 拿過來的
+    {{- include "labels" . | indent 4 }}
+{{- end }}
+{{- end }}

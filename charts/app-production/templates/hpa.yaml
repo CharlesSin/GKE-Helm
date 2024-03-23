@@ -1,0 +1,35 @@
+{{- if .Values.hpa }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace | default "default" }}
+spec:
+{{- with .Values.hpa }}
+  scaleTargetRef:
+    apiVersion: {{ .targetapiVersion | default "apps/v1" }}
+    kind: {{ .targetKind | default "Deployment" }}
+    name: {{ $.Values.name }}
+  minReplicas: {{ .min | default 1 }}
+  maxReplicas: {{ .max | default 4 }}
+  metrics:
+    {{- include "metrics" . | indent 4 }}
+{{- end }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 2
+        periodSeconds: 15
+      selectPolicy: Max
+{{- end }}

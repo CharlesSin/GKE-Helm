@@ -1,7 +1,7 @@
-# env => 部屬的環境(必填)，可填值 dev test staging prod
-# type => 部屬的類型(必填)，可填值 api job frontend
-# dept => 部門的單位(必填)，可填值 platform outside interface gt1
-# product => 服務名稱(必填)，例如: bbchat schedule
+# env => 部屬的環境(必填)，可填值 dev qa staging prod
+# type => 部屬的類型(必填)，可填值 api job frontend backendr
+# dept => 部門的單位(必填)，可填值 platform outside interface
+# product => 服務名稱(必填)，例如: expense schedule CMS
 # repo => 部屬服務的 repo 名稱(必填)，例如: imctl_api, imctl_web
 labels:
   env: dev
@@ -11,17 +11,17 @@ labels:
   repo: repo
 
 # namespace 預設 default
-namespace: # service namespace
+namespace: default # service namespace
 # serviceAccountName 預設 default
 serviceAccountName: null
 # 服務的名稱(必填)
-name: # service name. ex: <部門>-<組別>-<服務名稱>-<服務代號>
+name: nginx-test # service name. ex: <部門>-<組別>-<服務名稱>-<服務代號>
 
+# Deployment Config
 deployment:
   # container 的屬性
   container:
-    image: # docker image
-    # container 的 command，下面有範例(非必填)
+    image: nginx:stable-alpine3.17 # docker image
     # Pod 數量
     replicaCount: 1
     command:
@@ -32,24 +32,24 @@ deployment:
       # ConfigMap Ref
       ref:
         configMapRefName: configMapRefName
-        # Secret Ref 
+        # Secret Ref
         secretRefName: secretRefName
       # Secret value from
-      # secretFrom:
-      #   envName: envName
-      #   secretKeyRefName: secretKeyRefName
-      #   secretKeyRefKey: secretKeyRefKey
-    volumes: 
+      secretFrom:
+        envName: envName
+        secretKeyRefName: secretRefName
+        secretKeyRefKey: secretRefKey
+    volumes:
       name: config-volume
-      # configMap: 
-      #   name: socket-server-locator-configmap
-      #   itemsKey: Locator.json
-      #   itemsPath: Locator.json
-    # volumeMounts:
-    #   name: config-volume
-    #   mountPath: /app/config  # Mount path to access the ConfigMap data
+      configMap:
+        name: configmap
+        itemsKey: configmap.json
+        itemsPath: configmap.json
+    volumeMounts:
+      name: config-volume
+      mountPath: /app/config # Mount path to access the ConfigMap data
 
-# container 的資源設置
+# container pod 的資源設置
 resources:
   limits:
     cpu: "100m"
@@ -58,36 +58,21 @@ resources:
     cpu: "100m"
     memory: "128Mi"
     # container 的 livenessProbe，下面有範例(非必填)
-    # livenessProbe:
-    #   tcpSocket:
-    #     port: 80
-    # # 通常用於 api 檢查的 livenessProbe，下面有範例(非必填)
-    #   httpGet:
-    #     path: /health
-    #     port: 80
-    # # container 的 readinessProbe，下面有範例(非必填)
-    # readinessProbe:
-    #   tcpSocket:
-    #     port: 80
-    # # 通常用於 api 的 readinessProbe，下面有範例(非必填)
-    #   httpGet:
-    #     path: /health
-    #     port: 80
-
-  # sidecar container (fluentd, logrotate)
-  # sidecar:
-  #     # container 的名稱
-  #   - name: fluentd
-  #     # container 的 image(必填)
-  #     image: fluent
-  #     # container 的資源設置，如果沒有設置則使用預設值。下面有範例(非必填)
-  #     resources:
-  #       limits:
-  #         cpu: "100m"
-  #         memory: "128Mi"
-  #       requests:
-  #         cpu: "100m"
-  #         memory: "128Mi"
+    livenessProbe:
+      tcpSocket:
+        port: 80
+      # 通常用於 api 檢查的 livenessProbe，下面有範例(非必填)
+      httpGet:
+        path: /
+        port: 80
+    # container 的 readinessProbe，下面有範例(非必填)
+    readinessProbe:
+      tcpSocket:
+        port: 80
+      # 通常用於 api 的 readinessProbe，下面有範例(非必填)
+      httpGet:
+        path: /
+        port: 80
 
 # hpa 設定，下面有範例(非必填),Utilization 代表使用率，averageValue 代表平均值
 hpa:
@@ -130,7 +115,8 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
