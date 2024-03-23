@@ -12,4 +12,4 @@
 .parallel:
   charts:
     matrix:
-      - CHART: ["app-dev"]
+      - CHART: ["app-dev", "app-qa", "app-staging", "app-production"]
